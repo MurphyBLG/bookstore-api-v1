@@ -18,24 +18,59 @@ public class BookController : Controller
     }
 
     [HttpPost]
-    public async Task<ActionResult> AddBook(AddBookDTO addBookDTO)
+    public async Task<ActionResult> AddBook([FromBody] AddBookDTO addBookDTO)
     {
-        try 
+        try
         {
-            _context!.Add(new Book
+            var book = new Book
             {
                 Name = addBookDTO.Name,
                 Author = addBookDTO.Author,
                 Price = addBookDTO.Price
-            });
+            };
 
+            _context!.Add(book);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return Ok(book);
         }
         catch
         {
             return StatusCode(500);
         }
+    }
+
+    [HttpDelete("{bookId:int}")]
+    public async Task<ActionResult> DeleteBook(int bookId)
+    {
+        var book = _context!.Books!.Where(b => b.BookId == bookId).First();
+
+        if (book == null)
+        {
+            return NotFound();
+        }
+
+        _context.Remove(book);
+        await _context.SaveChangesAsync();
+        return Ok();
+    }
+
+    [HttpPut("{bookId:int}")]
+    public async Task<ActionResult> UpdateBook(int bookId, [FromBody] EditBookDTO editBookDTO) {
+        var book = _context!.Books!.Where(b => b.BookId == bookId).First();
+
+        if (book == null)
+        {
+            return NotFound();
+        }
+
+        // book.Name = editBookDTO.Name;
+        // book.Author = editBookDTO.Author;
+        // book.Price = editBookDTO.Price;
+
+        _context.Entry(book).CurrentValues.SetValues(editBookDTO);
+
+        await _context.SaveChangesAsync();
+        return Ok();
     }
 }
