@@ -63,11 +63,7 @@ public class BookController : Controller
         {
             return NotFound();
         }
-
-        // book.Name = editBookDTO.Name;
-        // book.Author = editBookDTO.Author;
-        // book.Price = editBookDTO.Price;
-
+        
         _context.Entry(book).CurrentValues.SetValues(editBookDTO);
 
         await _context.SaveChangesAsync();
