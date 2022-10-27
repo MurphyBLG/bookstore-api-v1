@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,11 +26,11 @@ public class LoginController : Controller
 
         if (user != null)
         {
-            var token = GenerateToken(user.Value!);
+            var token = GenerateToken(user);
             return Ok(token);
         }
 
-        return NotFound("User not found");
+        return BadRequest("Wrong username or password");
     }
 
     private string GenerateToken(UserInfo userInfo)
@@ -55,18 +56,28 @@ public class LoginController : Controller
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private ActionResult<UserInfo> Authenticate(UserDTO userDTO)
+    private UserInfo? Authenticate(UserDTO userDTO)
     {
-        var currentUser = from u in _context.Users
+        var currentUser = (from u in _context.Users
                           where u.Username == userDTO.Username
-                          select u;
-        
-        if (!currentUser.Any()) 
+                          select u).First();
+
+        if (currentUser == null)
         {
-            return NotFound("User not found");
+            return null;
         }
 
-        // password check
-        throw new NotImplementedException();
+        var userPass = currentUser.PasswordHash;
+        var salt = new byte[16];
+        Array.Copy(userPass!, 0, salt, 0, 16);
+
+        var pbkdf2 = new Rfc2898DeriveBytes(userDTO.Password!, salt, 100000);
+        byte[] hash = pbkdf2.GetBytes(20);
+
+        for (int i = 0; i < 20; i++)
+            if (userPass![i + 16] != hash[i])
+                return null;
+
+        return _context.UserInfos!.Find(currentUser.UserId)!;
     }
 }

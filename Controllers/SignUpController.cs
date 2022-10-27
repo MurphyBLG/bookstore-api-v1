@@ -11,10 +11,10 @@ public class SignUpController : Controller
     }
 
     [HttpPost]
-    public async Task<ActionResult> CreateUser([FromBody] UserDTO userDTO)
+    public async Task<ActionResult> CreateUser([FromBody] RegisterUserDTO registerUserDTO)
     {
         var user = from u in _context.Users
-                   where u.Username == userDTO.Username
+                   where u.Username == registerUserDTO.Username
                    select u;
 
         if (user.Any())
@@ -25,7 +25,7 @@ public class SignUpController : Controller
         byte[] salt;
         new RNGCryptoServiceProvider().GetBytes(salt = new byte[16]);
 
-        var pbkdf2 = new Rfc2898DeriveBytes(userDTO.Password!, salt, 100000);
+        var pbkdf2 = new Rfc2898DeriveBytes(registerUserDTO.Password!, salt, 100000);
         byte[] hash = pbkdf2.GetBytes(20);
 
         byte[] hashBytes = new byte[36];
@@ -36,10 +36,19 @@ public class SignUpController : Controller
         {
             PasswordHash = hashBytes,
             Role = "ocherednyara",
-            Username = userDTO.Username
+            Username = registerUserDTO.Username
+        };
+
+        var newUserInfo = new UserInfo
+        {
+            User = newUser,
+            EMail = registerUserDTO.EMail,
+            Name = registerUserDTO.Name,
+            Surname = registerUserDTO.Surname,
         };
 
         _context.Users!.Add(newUser);
+        _context.UserInfos!.Add(newUserInfo);
         await _context.SaveChangesAsync();
 
         return Ok();
