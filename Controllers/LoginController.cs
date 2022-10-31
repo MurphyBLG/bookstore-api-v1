@@ -26,41 +26,17 @@ public class LoginController : Controller
 
         if (user != null)
         {
-            var token = GenerateToken(user);
-            return Ok(token);
+            return Ok(user);
         }
 
         return BadRequest("Wrong username or password");
     }
 
-    private string GenerateToken(UserInfo userInfo)
-    {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"])); // ?????
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256); // ?????
-
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userInfo.User!.Username!),
-            new Claim(ClaimTypes.Email, userInfo.EMail!),
-            new Claim(ClaimTypes.Name, userInfo.Name!),
-            new Claim(ClaimTypes.Surname, userInfo.Surname!),
-            new Claim(ClaimTypes.Role, userInfo.User!.Role!)
-        };
-
-        var token = new JwtSecurityToken(_config["Jwt:Issuer"],
-        _config["Jwt:Audience"],
-        claims,
-        expires: DateTime.Now.AddMinutes(15),
-        signingCredentials: credentials); // ???
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    private UserInfo? Authenticate(UserDTO userDTO)
+    private UserInfoDTO? Authenticate(UserDTO userDTO)
     {
         var currentUser = (from u in _context.Users
-                          where u.Username == userDTO.Username
-                          select u).First();
+                           where u.Username == userDTO.Username
+                           select u).FirstOrDefault();
 
         if (currentUser == null)
         {
@@ -78,6 +54,24 @@ public class LoginController : Controller
             if (userPass![i + 16] != hash[i])
                 return null;
 
-        return _context.UserInfos!.Find(currentUser.UserId)!;
+
+        var userInfo = (from ui in _context.UserInfos
+                        where ui.UserId == currentUser.UserId
+                        select ui).FirstOrDefault();
+
+
+        if (userInfo == null)
+        {
+            return null;
+        }
+        UserInfoDTO userInfoDTO = new()
+        {
+            Username = userDTO.Username,
+            EMail = userInfo.EMail,
+            Name = userInfo.Name,
+            Surname = userInfo.Surname,
+            Role = currentUser.Role
+        };
+        return userInfoDTO;
     }
 }

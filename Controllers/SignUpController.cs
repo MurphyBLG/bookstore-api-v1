@@ -17,7 +17,6 @@ public class SignUpController : Controller
                    where u.Username == registerUserDTO.Username
                    select u;
 
-        if (user.Any())
         {
             return BadRequest("User with this username already exists");
         }
