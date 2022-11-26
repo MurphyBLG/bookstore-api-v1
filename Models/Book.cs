@@ -3,8 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 public class Book
 {
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public Int64 BookId { get; set; }
+    public int BookId { get; set; }
     [Required]
     [Column(TypeName = "varchar(255)")]
     public string? Name { get; set; }

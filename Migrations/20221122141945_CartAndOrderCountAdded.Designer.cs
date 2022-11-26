@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BooksAPI.Migrations
 {
     [DbContext(typeof(BooksDbContext))]
-    [Migration("20221027060531_UserSaltsEts")]
-    partial class UserSaltsEts
+    [Migration("20221122141945_CartAndOrderCountAdded")]
+    partial class CartAndOrderCountAdded
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -47,6 +47,58 @@ namespace BooksAPI.Migrations
                     b.ToTable("Books");
                 });
 
+            modelBuilder.Entity("Cart", b =>
+                {
+                    b.Property<long>("CartId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<long>("CartId"));
+
+                    b.Property<long?>("BookId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CartId");
+
+                    b.HasIndex("BookId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Carts");
+                });
+
+            modelBuilder.Entity("Order", b =>
+                {
+                    b.Property<long>("OrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<long>("OrderId"));
+
+                    b.Property<long?>("BookId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("OrderId");
+
+                    b.HasIndex("BookId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Orders");
+                });
+
             modelBuilder.Entity("User", b =>
                 {
                     b.Property<int>("UserId")
@@ -56,10 +108,6 @@ namespace BooksAPI.Migrations
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("UserId"));
 
                     b.Property<byte[]>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<byte[]>("PasswordSalt")
                         .IsRequired()
                         .HasColumnType("bytea");
 
@@ -102,6 +150,36 @@ namespace BooksAPI.Migrations
                         .IsUnique();
 
                     b.ToTable("UserInfos");
+                });
+
+            modelBuilder.Entity("Cart", b =>
+                {
+                    b.HasOne("Book", "Book")
+                        .WithMany()
+                        .HasForeignKey("BookId");
+
+                    b.HasOne("User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Book");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Order", b =>
+                {
+                    b.HasOne("Book", "Book")
+                        .WithMany()
+                        .HasForeignKey("BookId");
+
+                    b.HasOne("User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Book");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("UserInfo", b =>

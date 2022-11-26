@@ -59,13 +59,14 @@ public class LoginController : Controller
                         where ui.UserId == currentUser.UserId
                         select ui).FirstOrDefault();
 
-
         if (userInfo == null)
         {
             return null;
         }
+
         UserInfoDTO userInfoDTO = new()
         {
+            Token = GenerateToken(userInfo),
             Username = userDTO.Username,
             EMail = userInfo.EMail,
             Name = userInfo.Name,
@@ -74,4 +75,29 @@ public class LoginController : Controller
         };
         return userInfoDTO;
     }
+
+    private string GenerateToken(UserInfo userInfo)
+    {
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"])); // ?????
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256); // ?????
+
+        var claims = new[]
+        {
+            new Claim("userId", userInfo.UserId.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, userInfo.User!.Username!),
+            new Claim(ClaimTypes.Email, userInfo.EMail!),
+            new Claim(ClaimTypes.Name, userInfo.Name!),
+            new Claim(ClaimTypes.Surname, userInfo.Surname!),
+            new Claim(ClaimTypes.Role, userInfo.User!.Role!)
+        };
+
+        var token = new JwtSecurityToken(_config["Jwt:Issuer"],
+        _config["Jwt:Audience"],
+        claims,
+        expires: DateTime.Now.AddMinutes(15),
+        signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
 }
