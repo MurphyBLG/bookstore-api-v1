@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BooksAPI.Migrations
 {
     [DbContext(typeof(BooksDbContext))]
-    partial class BooksDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221205043348_ordersRestructuredV2")]
+    partial class ordersRestructuredV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,12 +93,6 @@ namespace BooksAPI.Migrations
 
             modelBuilder.Entity("OrderItem", b =>
                 {
-                    b.Property<int>("OrderItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("OrderItemId"));
-
                     b.Property<int?>("BookId")
                         .HasColumnType("integer");
 
@@ -105,8 +101,6 @@ namespace BooksAPI.Migrations
 
                     b.Property<int>("OrderId")
                         .HasColumnType("integer");
-
-                    b.HasKey("OrderItemId");
 
                     b.HasIndex("BookId");
 

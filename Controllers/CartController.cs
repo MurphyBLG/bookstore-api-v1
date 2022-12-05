@@ -14,7 +14,7 @@ public class CartController : Controller
 
     [Authorize]
     [HttpGet]
-    public async Task<ActionResult> GetCart()
+    public ActionResult GetCart()
     {
         var user = GetCurrentUser();
 
@@ -27,7 +27,7 @@ public class CartController : Controller
         bool cartExists = query.Any();
         if (cartExists)
         {
-            return Ok(query);
+            return Ok(query.Select(p => new {p.Book, p.Count}));
         } 
         else
         {
@@ -41,7 +41,10 @@ public class CartController : Controller
     {
         var user = GetCurrentUser();
 
-        // user not found error
+        if (user == null) 
+        {
+            return BadRequest("User not found");
+        } 
 
         var query = _context.Carts!.Where(u => u.User == user && u.Book!.BookId == book.BookId);
         bool bookInCart = query.Any();
@@ -51,7 +54,7 @@ public class CartController : Controller
         }
         else
         {
-            var bookRef = _context.Books.Where(b => b.BookId == book.BookId).First();
+            var bookRef = _context.Books!.Where(b => b.BookId == book.BookId).First();
             _context.Carts!.Add(new Cart
             {
                 User = user,
@@ -65,11 +68,14 @@ public class CartController : Controller
         return Ok();
     }
 
-    private User GetCurrentUser()
+    private User? GetCurrentUser()
     {
-        var userId = Int32.Parse(User.FindFirstValue("userId"));
+        var userId = Int32.Parse(User.FindFirstValue("userId")!);
 
-        // USER NOT FOUND ERROR
+        if (userId < 0) 
+        {
+            return null;
+        }
 
         var user = _context.Users!.Where(u => u.UserId == userId).First();
 

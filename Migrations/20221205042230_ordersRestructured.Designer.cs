@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BooksAPI.Migrations
 {
     [DbContext(typeof(BooksDbContext))]
-    partial class BooksDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221205042230_ordersRestructured")]
+    partial class ordersRestructured
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,24 +93,18 @@ namespace BooksAPI.Migrations
 
             modelBuilder.Entity("OrderItem", b =>
                 {
-                    b.Property<int>("OrderItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("OrderItemId"));
-
                     b.Property<int?>("BookId")
                         .HasColumnType("integer");
 
                     b.Property<int>("Count")
                         .HasColumnType("integer");
 
-                    b.Property<int>("OrderId")
+                    b.Property<int?>("OrderId")
                         .HasColumnType("integer");
 
-                    b.HasKey("OrderItemId");
-
                     b.HasIndex("BookId");
+
+                    b.HasIndex("OrderId");
 
                     b.ToTable("OrderItems");
                 });
@@ -196,7 +192,13 @@ namespace BooksAPI.Migrations
                         .WithMany()
                         .HasForeignKey("BookId");
 
+                    b.HasOne("Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId");
+
                     b.Navigation("Book");
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("UserInfo", b =>
