@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+[Authorize]
 [Route("api/[controller]")]
 public class CartController : Controller
 {
@@ -12,7 +13,6 @@ public class CartController : Controller
         _context = context;
     }
 
-    [Authorize]
     [HttpGet]
     public ActionResult GetCart()
     {
@@ -20,7 +20,7 @@ public class CartController : Controller
 
         if (user == null)
         {
-            return BadRequest("User not found");
+            return NotFound("User not found");
         }
 
         var query = _context.Carts!.Include(b => b.Book).Where(u => u.User == user);
@@ -31,11 +31,10 @@ public class CartController : Controller
         } 
         else
         {
-            return BadRequest("Cart not found");
+            return NotFound("Cart not found");
         }
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<ActionResult> AddBookToCart([FromBody] Book book)
     {

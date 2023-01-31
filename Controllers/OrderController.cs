@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
+[Authorize]
 [Route("api/[controller]")]
 public class OrderController : Controller
 {

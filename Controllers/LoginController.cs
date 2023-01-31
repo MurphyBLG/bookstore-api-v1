@@ -29,7 +29,7 @@ public class LoginController : Controller
             return Ok(user);
         }
 
-        return BadRequest("Wrong username or password");
+        return NotFound("Wrong username or password");
     }
 
     private UserInfoDTO? Authenticate(UserDTO userDTO)

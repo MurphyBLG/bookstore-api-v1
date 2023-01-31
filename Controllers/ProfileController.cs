@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+[Authorize]
 [Route("api/[controller]")]
 public class ProfileController : Controller
 {
@@ -20,7 +21,7 @@ public class ProfileController : Controller
 
         if (user == null)
         {
-            return BadRequest("User not found");
+            return NotFound("User not found");
         }
 
         var userInfo = _context.UserInfos!.Where(u => u.UserId == user.UserId).First();
@@ -34,7 +35,7 @@ public class ProfileController : Controller
             return Ok();
         }
         
-        return BadRequest("User info not found");
+        return NotFound("User info not found");
     }
 
     private User? GetCurrentUser()
